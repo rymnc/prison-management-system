@@ -25,6 +25,15 @@ contract prisonManagement {
   	address _address,
   	string dol);
 
+  	event prisoner_newCell(
+  		address _address,
+  		uint _cell);
+
+  	event prisoner_Transferred(
+  		address _address,
+  		uint _oldcell,
+  		uint _newcell);
+
   constructor() public {
   	admin=msg.sender;
   }
@@ -45,9 +54,10 @@ contract prisonManagement {
   	string last_name;
   	string doj;
   	string dol;
+  	uint cell;
   }
 
-  mapping (address => prisoner) Prisoner;
+  mapping (address => prisoner) public Prisoner;
   address[] public prisoners;
 
   function set_Warden(uint _id, string memory _first_name, string memory _last_name, string memory _dob, address _address) public onlyAdmin() {
@@ -80,4 +90,33 @@ contract prisonManagement {
         }
         return(c);
     }
+
+  function set_Cell(address _address,uint _cell) public returns(bool){
+  	require(checkWarden(msg.sender)==true,"Only Warden can assign cell numbers");
+  	require(checkPrisoner(_address)==true,"Only Prisoners can be in Cells");
+  	if(Prisoner[_address].cell==0){
+  		Prisoner[_address].cell=_cell;
+  		emit prisoner_newCell(_address,_cell);
+  	} else {
+  		require(Prisoner[_address].cell!=_cell,"Old and New Cell cannot be Same!");
+  		prisoner_Transfer(_address,_cell);
+  	}
+
+  }
+
+  function prisoner_Transfer(address _address,uint _newcell) private returns(bool){
+  	uint oldcell;
+  	oldcell = Prisoner[_address].cell;
+  	Prisoner[_address].cell=_newcell;
+  	emit prisoner_Transferred(_address,oldcell,_newcell);
+  }
+
+  function checkPrisoner(address _address) private view returns(bool){
+      bool c=false;
+      for(uint32 i=0;i<prisoners.length;i++){
+          if(_address==prisoners[i])
+            c=true;
+      }
+      return(c);
+  }
 }

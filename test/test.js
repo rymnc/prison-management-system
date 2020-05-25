@@ -48,4 +48,55 @@ contract('prisonManagement', function (accounts) {
   		}
   	})
   });
+
+  it("Can Set Cell of new Prisoner",function(){
+  	return pminstance.set_Cell(accounts[3],"23",{from:accounts[1]}).then(function (result){
+  		let data = pminstance.Prisoner.call(accounts[1]);
+  		assert(data.cell!=0,"Valid Cell Set");
+  	});
+  });
+
+  it("Only Warden can Set Cell of Prisoner",function(){
+  	return pminstance.set_Cell(accounts[3],"12",{from:accounts[2]}).then(function (result){
+  		throw("Modifier issue");
+  	}).catch( function(e){
+  		if(e==="Modifier issue"){
+  			assert(false);
+  		} else{
+  			assert(true);
+  		}
+  	})
+  });
+
+  it("Can Transfer Prisoner between Cells",function(){
+  	return pminstance.set_Cell(accounts[3],"17",{from:accounts[1]}).then(function (result){
+  		let data = pminstance.Prisoner.call(accounts[3]);
+  		assert(data.cell!=0,"Valid Cell Transfer");
+  	});
+  });
+
+   it("Only Prisoners can be put in cells",function(){
+   	 return pminstance.set_Cell(accounts[2],"18",{from:accounts[1]}).then(function (result){
+   	 throw("Only Prisoners")
+
+   	 }).catch(function(e){
+   	 	if(e==="Only Prisoners"){
+   	 		assert(false);
+   	 	} else {
+   	 		assert(true);
+   	 	}
+   	 })
+   });
+
+   it("Old and New Cell Cannot be the Same!",function(){
+   	 return pminstance.set_Cell(accounts[3],"17",{from:accounts[1]}).then(function (result){
+   	 	throw("Old not New");
+   	 }).catch(function (e){
+   	 	if(e==="Old not New") {
+   	 		assert(false);
+   	 	} else {
+   	 		assert(true);
+   	 	}
+   	 })
+   });
 });
