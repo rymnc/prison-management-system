@@ -23,7 +23,9 @@ contract prisonManagement {
   	string last_name,
   	string doj,
   	address _address,
-  	string dol);
+  	string dol,
+  	string belongings,
+  	string medicalhistory);
 
   	event prisoner_newCell(
   		address _address,
@@ -33,6 +35,15 @@ contract prisonManagement {
   		address _address,
   		uint _oldcell,
   		uint _newcell);
+
+  	event JobProvider_Set(
+  		uint id,
+  		string name,
+  		string jobs,
+  		address _address);
+
+  	event Jobs_Updated(
+  		string jobs);
 
   constructor() public {
   	admin=msg.sender;
@@ -55,7 +66,20 @@ contract prisonManagement {
   	string doj;
   	string dol;
   	uint cell;
+  	string belongings;
+  	string medical;
+  	//string job;
   }
+
+  struct jobProvider{
+  	uint id;
+  	string name;
+
+  	string jobs;
+  }
+
+  mapping (address => jobProvider) public JobProvider;
+
 
   mapping (address => prisoner) public Prisoner;
   address[] public prisoners;
@@ -70,7 +94,7 @@ contract prisonManagement {
   	emit Warden_Set(_id,_first_name,_last_name,_dob,_address);
   }
 
-  function set_Prisoner(uint _id, string memory _first_name, string memory _last_name,string memory _doj, address _address,string memory _dol) public {
+  function set_Prisoner(uint _id, string memory _first_name, string memory _last_name,string memory _doj, address _address,string memory _dol,string memory _belongings,string memory _medical) public {
   	require(checkWarden(msg.sender)==true,"Only Warden can Add new Prisoners!");
   	prisoner storage Person = Prisoner[_address];
   	Person.id=_id;
@@ -78,8 +102,26 @@ contract prisonManagement {
   	Person.last_name=_last_name;
   	Person.doj=_doj;
   	Person.dol=_dol;
+  	Person.belongings=_belongings;
+  	Person.medical=_medical;
   	prisoners.push(_address);
-  	emit Prisoner_Set(_id,_first_name,_last_name,_doj,_address,_dol);
+  	emit Prisoner_Set(_id,_first_name,_last_name,_doj,_address,_dol,_belongings,_medical);
+  }
+
+  function set_JobProvider(uint _id,string memory _name, string memory _jobs,address _address) public {
+  	require(checkWarden(msg.sender)==true,"Only Warden can Add new Job Provider!");
+  	jobProvider storage Person = JobProvider[_address];
+  	Person.id=_id;
+  	Person.name=_name;
+  	Person.jobs=_jobs;
+  	emit JobProvider_Set(_id,_name,_jobs,_address);
+  }
+
+  function update_Jobs(string memory _jobs) public {
+  	require(JobProvider[msg.sender].id!=0,"Only Job Providers can access this function");
+  	require(hashCompareWithLengthCheck(JobProvider[msg.sender].jobs,_jobs)==false,"Update must be met");
+  	JobProvider[msg.sender].jobs=_jobs;
+  	emit Jobs_Updated(_jobs);
   }
 
   function checkWarden(address _address) private view returns(bool){
@@ -119,4 +161,15 @@ contract prisonManagement {
       }
       return(c);
   }
+
+    function hashCompareWithLengthCheck(string memory a,string memory b) private pure returns(bool){
+    if(bytes(a).length != bytes(b).length) {
+        return false;
+    } else {
+        return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
+    }
 }
+}
+
+
+

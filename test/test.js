@@ -32,13 +32,13 @@ contract('prisonManagement', function (accounts) {
   });
 
   it("Adds new Prisoner",function(){
-  	return pminstance.set_Prisoner("12","Ajay","Nager","20/04/2020",accounts[3],"20/04/2040",{from:accounts[1]}).then( function(result){
+  	return pminstance.set_Prisoner("12","Ajay","Nager","20/04/2020",accounts[3],"20/04/2040","broke","diabetes",{from:accounts[1]}).then( function(result){
   		assert(pminstance.prisoners[0]!=0,"Valid Prisoner Add");
   	});
   });
 
   it("Only Warden can add Prisoner",function(){
-  	return pminstance.set_Prisoner("12","Ajay","Nager","20/04/2020",accounts[1],"20/04/2040",{from:accounts[3]}).then(function (result){
+  	return pminstance.set_Prisoner("12","Ajay","Nager","20/04/2020",accounts[1],"20/04/2040","100$","Leprosy",{from:accounts[3]}).then(function (result){
   		throw("Modifier issue");
   	}).catch(function(e){
   		if(e==="Modifier issue"){
@@ -98,5 +98,57 @@ contract('prisonManagement', function (accounts) {
    	 		assert(true);
    	 	}
    	 })
+   });
+
+   it("Can set Job Provider",function(){
+   	return pminstance.set_JobProvider("18","Kamlesh","Mining,Laundry,Scrapping",accounts[5],{from:accounts[1]}).then(function (result){
+   		let data = pminstance.JobProvider.call(accounts[5]);
+   		assert(data.id!=0,"Valid Job Provider Creation");
+   	});
+   });
+
+   it("Only Warden Can set Job Provider",function(){
+   	return pminstance.set_JobProvider("18","Kamlesh","Mining,Laundry,Scrapping",accounts[5],{from:accounts[2]}).then(function (result){
+   		throw("Modifier issue");
+   	}).catch(function(e){
+   		if(e==="Modifier issue"){
+   			assert(false);
+   		} else {
+   			assert(true);
+   		}
+   	})
+   });
+
+   it("Should allow Updation of Jobs",function(){
+
+   	return pminstance.update_Jobs("Mining,Laundry",{from:accounts[5]}).then(function(result){
+   		let data = pminstance.JobProvider.call(accounts[5]);
+   		assert(data.jobs!='',"Valid Job Updation");
+
+   	});
+   });
+
+   it("Should allow Updation of Jobs only by Job Provider",function(){
+   	return pminstance.update_Jobs("Mining",{from:accounts[0]}).then(function(result){
+   		throw("Modifier issue");
+   	}).catch(function(e){
+   		if(e==="Modifier issue") {
+   			assert(false);
+   		} else {
+   			assert(true);
+   		}
+   	})
+   });
+
+   it("Old Jobs and New Jobs must not be the same",function(){
+   	pminstance.update_Jobs("Mining,Laundry",{from:accounts[5]}).then(function(result){
+   		throw("Old Not New");
+   	}).catch(function(e){
+   		if(e==="Old Not New") {
+   			assert(false);
+   		} else {
+   			assert(true);
+   		}
+   	})
    });
 });
