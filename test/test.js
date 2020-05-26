@@ -151,4 +151,36 @@ contract('prisonManagement', function (accounts) {
    		}
    	})
    });
+
+   it("Should Set Job of Prisoner",function(){
+   		return pminstance.set_Work("Mining",accounts[3],{from:accounts[5]}).then(function(result){
+   			let data = pminstance.WorkingPrisoner(accounts[5]);
+   			assert(data.work!='',"Valid Job Addition");
+   		});
+   });
+
+   it("Only Job Provider can set Job of Prisoner",function(){
+   		return pminstance.set_Work("Mining",accounts[3],{from:accounts[9]}).then(function(result){
+   			throw("Modifier issue");
+   		}).catch(function(e){
+   			if(e==="Modifier issue") {
+   				assert(false);
+   			} else {
+   				assert(true);
+   			}
+   		})
+   });
+
+   it("Old and New Job of Prisoner must not be the same",function(){
+   		return pminstance.set_Work("Mining",accounts[3],{from:accounts[5]}).then(function(result){
+   			throw("Old Not New");
+   		}).catch(function(e){
+   			if(e==="Old Not New"){
+   				assert(false);
+   			} else {
+   				assert(true);
+   			}
+   		})
+   });
+
 });

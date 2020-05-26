@@ -45,6 +45,10 @@ contract prisonManagement {
   	event Jobs_Updated(
   		string jobs);
 
+  	event Prisoner_newJob(
+  		string name,
+  		string job);
+
   constructor() public {
   	admin=msg.sender;
   }
@@ -74,9 +78,14 @@ contract prisonManagement {
   struct jobProvider{
   	uint id;
   	string name;
-
   	string jobs;
   }
+
+  struct workingJobs{
+  	string work;
+    }
+
+  mapping(address => workingJobs) public WorkingPrisoner;
 
   mapping (address => jobProvider) public JobProvider;
 
@@ -124,6 +133,15 @@ contract prisonManagement {
   	emit Jobs_Updated(_jobs);
   }
 
+  function set_Work(string memory _jobwork, address _address) public {
+  	require(JobProvider[msg.sender].id!=0,"Only Job Providers can access this function");
+  	require(hashCompareWithLengthCheck(WorkingPrisoner[_address].work,_jobwork)==false,"Update must be met");
+  	workingJobs storage Person = WorkingPrisoner[_address];
+  	Person.work = _jobwork;
+  	emit Prisoner_newJob(Prisoner[_address].first_name,_jobwork);
+  }
+
+
   function checkWarden(address _address) private view returns(bool){
         bool c=false;
         for(uint32 i=0;i<wardens.length;i++){
@@ -165,11 +183,12 @@ contract prisonManagement {
     function hashCompareWithLengthCheck(string memory a,string memory b) private pure returns(bool){
     if(bytes(a).length != bytes(b).length) {
         return false;
-    } else {
+    	} else {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
-    }
+    	}
+		}
 }
-}
+
 
 
 
