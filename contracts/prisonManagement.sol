@@ -136,6 +136,7 @@ contract prisonManagement {
   function set_Work(string memory _jobwork, address _address) public {
   	require(JobProvider[msg.sender].id!=0,"Only Job Providers can access this function");
   	require(hashCompareWithLengthCheck(WorkingPrisoner[_address].work,_jobwork)==false,"Update must be met");
+  	require(checkPrisoner(_address)==true,"Only Prisoners can have Jobs!");
   	workingJobs storage Person = WorkingPrisoner[_address];
   	Person.work = _jobwork;
   	emit Prisoner_newJob(Prisoner[_address].first_name,_jobwork);

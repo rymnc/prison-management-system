@@ -6,6 +6,7 @@ let pminstance;
 contract('prisonManagement', function (accounts) {
   //accounts[0] is the default account
   //Test case 1
+  context("Basic Tests",function(){
   it("Contract Deployed", function() {
     return pm.deployed().then(function (instance) {
       pminstance = instance;
@@ -48,6 +49,9 @@ contract('prisonManagement', function (accounts) {
   		}
   	})
   });
+ });
+
+  context("Cell Transfer/Updation",function(){
 
   it("Can Set Cell of new Prisoner",function(){
   	return pminstance.set_Cell(accounts[3],"23",{from:accounts[1]}).then(function (result){
@@ -99,6 +103,9 @@ contract('prisonManagement', function (accounts) {
    	 	}
    	 })
    });
+ });
+
+   context("Job Provider",function(){
 
    it("Can set Job Provider",function(){
    	return pminstance.set_JobProvider("18","Kamlesh","Mining,Laundry,Scrapping",accounts[5],{from:accounts[1]}).then(function (result){
@@ -151,7 +158,8 @@ contract('prisonManagement', function (accounts) {
    		}
    	})
    });
-
+  });
+ context("Work of Prisoner",function(){
    it("Should Set Job of Prisoner",function(){
    		return pminstance.set_Work("Mining",accounts[3],{from:accounts[5]}).then(function(result){
    			let data = pminstance.WorkingPrisoner(accounts[5]);
@@ -183,4 +191,16 @@ contract('prisonManagement', function (accounts) {
    		})
    });
 
+   it("Should allow only Prisoners to be assigned jobs",function(){
+   	return pminstance.set_Work("Laundry",accounts[7],{from:accounts[5]}).then(function(result){
+   		throw("Modifier issue");
+   	}).catch(function(e){
+   		if(e==="Modifier issue"){
+   			assert(false);
+   		} else {
+   			assert(true);
+   		}
+   	})
+   });
+ });
 });
