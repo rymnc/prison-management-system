@@ -1,12 +1,14 @@
 let pm = artifacts.require("./prisonManagement.sol");
 let pminstance;
 
+var colors = require('colors');
+
 
 
 contract('prisonManagement', function (accounts) {
   //accounts[0] is the default account
   //Test case 1
-  context("Basic Tests",function(){
+  context("Basic Tests".rainbow,function(){
   it("Contract Deployed", function() {
     return pm.deployed().then(function (instance) {
       pminstance = instance;
@@ -51,7 +53,7 @@ contract('prisonManagement', function (accounts) {
   });
  });
 
-  context("Cell Transfer/Updation",function(){
+  context("Cell Transfer/Updation".rainbow,function(){
 
   it("Can Set Cell of new Prisoner",function(){
   	return pminstance.set_Cell(accounts[3],"23",{from:accounts[1]}).then(function (result){
@@ -105,7 +107,7 @@ contract('prisonManagement', function (accounts) {
    });
  });
 
-   context("Job Provider",function(){
+   context("Job Provider".rainbow,function(){
 
    it("Can set Job Provider",function(){
    	return pminstance.set_JobProvider("18","Kamlesh","Mining,Laundry,Scrapping",accounts[5],{from:accounts[1]}).then(function (result){
@@ -159,7 +161,7 @@ contract('prisonManagement', function (accounts) {
    	})
    });
   });
- context("Work of Prisoner",function(){
+ context("Work of Prisoner".rainbow,function(){
    it("Should Set Job of Prisoner",function(){
    		return pminstance.set_Work("Mining",accounts[3],{from:accounts[5]}).then(function(result){
    			let data = pminstance.WorkingPrisoner(accounts[5]);
@@ -202,5 +204,90 @@ contract('prisonManagement', function (accounts) {
    		}
    	})
    });
+ });
+
+ context("Security".rainbow,function(){
+   it("Should allow creation of a Security",function(){
+     return pminstance.set_Security(1,"Jose",accounts[9],{from:accounts[1]}).then(function(result){
+       assert(pminstance.security.call(accounts[9])!=0,"Valid Security Creation");
+     });
+   });
+
+   it("Only Warden can create Security",function(){
+     return pminstance.set_Security(12,"Paki",accounts[8]).then(function(result){
+       throw("Modifier error");
+     }).catch(function (e){
+       if(e==="Modifier error"){
+         assert(false);
+       } else {
+         assert(true);
+       }
+     })
+   });
+
+   it("No Prisoner can be a security",function(){
+     return pminstance.set_Security(123,"Popo",accounts[3],{from:accounts[1]}).then(function(result){
+       throw("Modifier error");
+     }).catch(function(e){
+       if(e==="Modifier error") {
+         assert(false);
+       } else {
+         assert(true);
+       }
+     })
+   });
+
+   it("Should allow Assignment of Security",function(){
+     return pminstance.set_AssignmentSecurity(accounts[9],"Cell 1-10",{from:accounts[1]}).then(function(result){
+       assert(pminstance.security.call(accounts[9]).assignment!='',"Valid Assignment");
+     });
+   });
+
+   it("Only Warden can Assign Security",function(){
+     return pminstance.set_AssignmentSecurity(accounts[9],"Cell 2-10",{from:accounts[5]}).then(function(result){
+       throw("Modifier error");
+     }).catch(function(e){
+       if(e==="Modifier error") {
+         assert(false);
+       } else {
+         assert(true);
+       }
+     })
+   });
+
+   it("Only Security can be Assigned",function(){
+     return pminstance.set_AssignmentSecurity(accounts[3],"Cell 23-100",{from:accounts[1]}).then(function(result){
+       throw("Modifier error");
+     }).catch(function(e){
+       if(e==="Modifier error"){
+         assert(false);
+       } else {
+         assert(true);
+       }
+     })
+   });
+
+   it("Should allow Updation of Assignment",function(){
+     let data = pminstance.security.call(accounts[9]).assignment;
+     return pminstance.set_AssignmentSecurity(accounts[9],"Cell 45-100",{from:accounts[1]}).then(function(result){
+       assert(data==pminstance.security.call(accounts[9]).assignment,"Valid Updation")
+     });
+      
+    
+   });
+
+   it("Old and New Assignment cannot be the same",function(){
+     return pminstance.set_AssignmentSecurity(accounts[9],"Cell 45-100",{from:accounts[1]}).then(function(result){
+       throw("Modifier error")
+     }).catch(function(e){
+       if(e==="Modifier error") {
+         assert(false);
+       }
+       else {
+         assert(true);
+       }
+     })
+   });
+
  });
 });

@@ -49,6 +49,20 @@ contract prisonManagement {
   		string name,
   		string job);
 
+    event new_Security(
+      string name,
+      address _address
+      );
+
+    event security_newAssignment(
+      string name,
+      string assignment);
+
+    event security_changedAssignment(
+      string name,
+      string oldassignment,
+      string newassignment);
+
   constructor() public {
   	admin=msg.sender;
   }
@@ -84,6 +98,15 @@ contract prisonManagement {
   struct workingJobs{
   	string work;
     }
+
+  struct Security{
+    uint id;
+    string name;
+    string assignment;
+
+  }
+
+  mapping(address => Security) public security;
 
   mapping(address => workingJobs) public WorkingPrisoner;
 
@@ -142,6 +165,33 @@ contract prisonManagement {
   	emit Prisoner_newJob(Prisoner[_address].first_name,_jobwork);
   }
 
+  function set_Security(uint _id, string memory _name, address _address) public {
+    require(checkWarden(msg.sender)==true,"Only Warden can assign cell numbers");
+    require(checkPrisoner(_address)==false,"Prisoners cannot be security");
+    Security storage Person = security[_address];
+    Person.id=_id;
+    Person.name=_name;
+    emit new_Security(_name,_address);
+  }
+
+  function set_AssignmentSecurity(address _address,string memory _assignment) public {
+    require(checkWarden(msg.sender)==true,"Only Warden can assign cell numbers");
+    require(security[_address].id!=0,"Only Security can have Assignments");
+    if(hashCompareWithLengthCheck(security[_address].assignment,'')==true){
+      security[_address].assignment=_assignment;
+      emit security_newAssignment(security[_address].name,_assignment);
+    } else {
+      require(hashCompareWithLengthCheck(security[_address].assignment,_assignment)==false,"Old and New Assignment cannot be same");
+      change_AssignmentSecurity(_address,_assignment);
+    }
+  }
+
+  function change_AssignmentSecurity(address _address,string memory _assignment) private {
+    string memory oldassignment = security[_address].assignment;
+    security[_address].assignment=_assignment;
+    emit security_changedAssignment(security[_address].name,oldassignment,_assignment);
+  }
+
 
   function checkWarden(address _address) private view returns(bool){
         bool c=false;
@@ -165,7 +215,7 @@ contract prisonManagement {
 
   }
 
-  function prisoner_Transfer(address _address,uint _newcell) private returns(bool){
+  function prisoner_Transfer(address _address,uint _newcell) private {
   	uint oldcell;
   	oldcell = Prisoner[_address].cell;
   	Prisoner[_address].cell=_newcell;
