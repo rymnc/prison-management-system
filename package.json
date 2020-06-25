@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "colors": "^1.4.0"
+  },
+  "scripts":{
+    "setup":"truffle develop",
+    "test":"truffle test"
   }
 }
