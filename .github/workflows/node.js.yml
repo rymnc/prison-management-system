@@ -24,8 +24,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm i
-    - run: npm ci
-    - run: npm install -g truffle
+
+    - run: yarn global add truffle
     - run: truffle develop
     - run: truffle test
