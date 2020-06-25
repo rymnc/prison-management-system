@@ -1,9 +1,0 @@
-dist: xenial
-language: node_js
-node_js:
-    - "lts/dubnium"
-install:
-    - yarn add truffle
-script:
-    - yarn setup
-    - yarn test
